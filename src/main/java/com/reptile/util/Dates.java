@@ -27,7 +27,7 @@ public class Dates {
 	 * @return
 	 */
 	public static String currentTime(){
-		SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日  hh:mm:ss");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日  HH:mm:ss");
 	    String mon = format.format(new Date());
 		return mon;
 	}
