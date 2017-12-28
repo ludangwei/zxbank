@@ -89,8 +89,8 @@ public class ZXBankDepositCardService {
                 logger.warn("登录失败！" + errorReason.getText());
                 map.put("errorCode", "0002");
                 map.put("errorInfo", errorReason.getText());
-                driver.quit();
                 PushSocket.pushnew(map, UUID, "3000","中信银行登陆失败,"+errorReason.getText());
+                driver.quit();
                 return map;
             } catch (NoSuchElementException e) {
                 logger.warn("登录成功");
