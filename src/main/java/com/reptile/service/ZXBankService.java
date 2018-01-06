@@ -5,7 +5,9 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.reptile.util.ConstantInterface;
+import com.reptile.util.CountTime;
 import com.reptile.util.PushSocket;
+import com.reptile.util.PushState;
 import com.reptile.util.Resttemplate;
 import com.reptile.util.WebClientFactory;
 import net.sf.json.JSONArray;
@@ -28,6 +30,7 @@ import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -200,20 +203,28 @@ public class ZXBankService {
     }
 
 
-    public Map<String, Object> getDetailMes(HttpServletRequest request, String userCard, String phoneCode, String UUID) {
-
+    public Map<String, Object> getDetailMes(HttpServletRequest request, String userCard, String phoneCode, String UUID,String timeCnt) throws ParseException {
+    	boolean isok = false;
         Map<String, Object> map = new HashMap<String, Object>();
         HttpSession session = request.getSession();
         Object zxhttpClient = session.getAttribute("ZXhttpClient");
 
+        isok = CountTime.getCountTime(timeCnt);
         Object zxImageCodeCook = session.getAttribute("zxCookies2");
         String flag="";
         PushSocket.pushnew(map, UUID, "1000","中信银行信用卡登陆中");
+        if(isok==true) {
+        	PushState.state(userCard, "bankBillFlow", 100);
+        }
         if (zxhttpClient == null || zxImageCodeCook == null) {
-        	PushSocket.push(map, UUID, "0001");
             map.put("errorCode", "0001");
             map.put("errorInfo", "登录超时");
             PushSocket.pushnew(map, UUID, "3000","中信银行信用卡登陆失败");
+            if(isok==true) {
+            	PushState.state(userCard, "bankBillFlow", 200,"登录超时,登陆失败");
+            }else {
+            	PushState.stateX(userCard, "bankBillFlow", 200,"登录超时,登陆失败");
+            }
             return map;
         } else {
             HttpClient httpClient = (HttpClient) zxhttpClient;
@@ -229,13 +240,18 @@ public class ZXBankService {
                 postM.getParams().setContentCharset("utf-8");
 
                 if (!postM.getResponseBodyAsString().contains("校验成功")) {
-                	PushSocket.push(map, UUID, "0001");
                     net.sf.json.JSONObject jsonObject = net.sf.json.JSONObject.fromObject(postM.getResponseBodyAsString());
                     map.put("errorCode", "0001");
                     map.put("errorInfo", jsonObject.get("rtnMsg").toString());
+                    PushSocket.pushnew(map, UUID, "3000","短信验证码提交出错,登陆失败");
+                    if(isok==true) {
+                    	PushState.state(userCard, "bankBillFlow", 200,"短信验证码提交出错,登陆失败");
+                    }else {
+                    	PushState.stateX(userCard, "bankBillFlow", 200,"短信验证码提交出错,登陆失败");
+                    }
                     return map;
                 }
-                PushSocket.push(map, UUID, "0000");
+
                 //成功进入信用卡信息页面
                 GetMethod getMethod = new GetMethod("https://creditcard.ecitic.com/citiccard/newonline/myaccount.do?func=mainpage");
                 getMethod.setRequestHeader("Cookie", coks);
@@ -243,13 +259,20 @@ public class ZXBankService {
                 getMethod.getParams().setContentCharset("utf-8");
                 
                 if (getMethod.getResponseBodyAsString().contains("您还未绑卡，暂不支持业务办理")) {
-                	PushSocket.push(map, UUID, "0001");
                     map.put("errorCode", "0003");
                     map.put("errorInfo", "您还未绑卡，暂不支持业务办理");
                     PushSocket.pushnew(map, UUID, "3000","中信银行信用卡登陆失败，您还未绑卡，暂不支持业务办理");
+                    if(isok==true) {
+                    	PushState.state(userCard, "bankBillFlow", 200,"中信银行信用卡登陆失败，您还未绑卡，暂不支持业务办理");
+                    }else {
+                    	PushState.stateX(userCard, "bankBillFlow", 200,"中信银行信用卡登陆失败，您还未绑卡，暂不支持业务办理");
+                    }
                     return map;
                 }
-                
+                PushSocket.pushnew(map, UUID, "2000","中信银行登陆成功");
+                Thread.sleep(1000);
+                PushSocket.pushnew(map, UUID, "5000","中信银行信息获取中");
+                flag="5000";
                 //查询信用卡额度及可提现额度
                 PostMethod method = new PostMethod("https://creditcard.ecitic.com/citiccard/newonline/settingManage.do?func=getCreditLimit");
                 method.setRequestHeader("Cookie", coks);
@@ -260,14 +283,12 @@ public class ZXBankService {
                 JSONObject creditLimit = (JSONObject) response2.get("CreditLimit");
                 String cashmoney = creditLimit.get("cashmoney").toString();
                 String fixedEd = creditLimit.get("fixedEd").toString();
-                PushSocket.pushnew(map, UUID, "2000","中信银行登陆成功");
-                flag="2000";
+
                 //查询该账号下对应的银行卡信息有几个
                 PostMethod postMethod = new PostMethod("https://creditcard.ecitic.com/citiccard/newonline/common.do?func=querySignCards");
                 postMethod.setRequestHeader("Cookie", coks);
                 httpClient.executeMethod(postMethod);
-                PushSocket.pushnew(map, UUID, "5000","中信银行信息获取中");
-                flag="5000";
+
                 //将得到的xml转换为json数据
                 String cardResult = postMethod.getResponseBodyAsString();
                 JSONObject jsonObject = XML.toJSONObject(cardResult);
@@ -281,6 +302,11 @@ public class ZXBankService {
                     cardlist1.add(cardlist);
                     logger.warn("中信银行获取卡列表失败 mrldw",e);
                     PushSocket.pushnew(map, UUID, "7000","中信银行信息获取失败");
+                    if(isok==true) {
+                    	PushState.state(userCard, "bankBillFlow", 200,"中信银行获取卡列表失败");
+                    }else {
+                    	PushState.stateX(userCard, "bankBillFlow", 200,"中信银行获取卡列表失败");
+                    }
                 }
 
 
@@ -354,24 +380,35 @@ public class ZXBankService {
                     map.put("errorInfo","查询成功");
                     map.put("errorCode","0000");
                     PushSocket.pushnew(map, UUID, "8000","中信银行信用卡认证成功");
+                    if(isok==true) {
+                     	PushState.state(userCard, "bankBillFlow", 300);
+                     }
                 }else{
                 	//--------------------数据中心推送状态----------------------
                 	 PushSocket.pushnew(map, UUID, "9000","中信银行信用卡认证失败"+map.get("errorInfo").toString());
+                	 if(isok==true) {
+                     	PushState.state(userCard, "bankBillFlow", 200,map.get("errorInfo").toString());
+                     }else {
+                     	PushState.stateX(userCard, "bankBillFlow", 200,map.get("errorInfo").toString());
+                     }
                 	//---------------------数据中心推送状态----------------------
 //                	logger.warn("光大银行储蓄卡推送失败"+IDNumber);
                 	
                 }
             } catch (Exception e) {
-            	if(flag.equals("2000")){
+            	if(flag.equals("5000")){
 					PushSocket.pushnew(map, UUID, "7000","中信信用卡账单获取失败");
-				}else if(flag.equals("5000")){
-					PushSocket.pushnew(map, UUID, "7000","中信信用卡单获取失败");
 				}else if(flag.equals("6000")){
 					PushSocket.pushnew(map, UUID, "9000","中信信用卡，认证失败");
 				}else{
 					PushSocket.pushnew(map, UUID, "3000","中信信用卡，登录失败");
 				}
                 logger.warn(e.getMessage() + "  中信获取账单   mrlu",e);
+                if(isok==true) {
+                 	PushState.state(userCard, "bankBillFlow", 200,"网络异常，数据获取失败");
+                 }else {
+                 	PushState.stateX(userCard, "bankBillFlow", 200,"网络异常，数据获取失败");
+                 }
                 map.put("errorCode", "0002");
                 map.put("errorInfo", "查询出错");
             }

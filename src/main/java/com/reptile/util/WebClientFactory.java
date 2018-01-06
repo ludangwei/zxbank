@@ -1,5 +1,6 @@
 package com.reptile.util;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.WebClient;
 
@@ -10,7 +11,7 @@ public class WebClientFactory {
 
 
     //public WebClient webClient = new WebClient(BrowserVersion.FIREFOX_45, Scheduler.ip, Scheduler.port);
-    public WebClient webClient = new WebClient();
+    public WebClient webClient = new WebClient(BrowserVersion.FIREFOX_45);
 
     public WebClient getWebClient() {
         webClient.getCookieManager().setCookiesEnabled(true);// 开启cookie管理

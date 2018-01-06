@@ -48,12 +48,12 @@ public class ZXBankController {
         return service.sendPhoneCode(request);
     }
 
-    @CustomAnnotation
+//    @CustomAnnotation
     @ApiOperation(value = "4.获取账单信息", notes = "参数：身份证，phone,uuid")
     @ResponseBody
     @RequestMapping(value = "getDetailMes", method = RequestMethod.POST)
-    public Map<String, Object> getDetailMes(HttpServletRequest request, @RequestParam("userCard") String userCard, @RequestParam("phoneCode") String phoneCode, @RequestParam("UUID")String UUID) throws  Exception {
-        return service.getDetailMes(request,userCard.trim(),phoneCode.trim(),UUID.trim());
+    public Map<String, Object> getDetailMes(HttpServletRequest request, @RequestParam("userCard") String userCard, @RequestParam("phoneCode") String phoneCode, @RequestParam("UUID")String UUID, @RequestParam("timeCnt")String timeCnt) throws  Exception {
+        return service.getDetailMes(request,userCard.trim(),phoneCode.trim(),UUID.trim(),timeCnt.trim());
     }
 
 }

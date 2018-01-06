@@ -27,7 +27,7 @@ public class ZXBankDepositCardController {
     @RequestMapping(value = "getDetailMes", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(value = "储蓄卡获取数据", notes = "参数：身份证，卡号，用户名，密码,uuid")
-    @CustomAnnotation
+//    @CustomAnnotation
     public Map<String, Object> getDetailMes(HttpServletRequest request, @RequestParam("IDNumber") String IDNumber,
                                             @RequestParam("cardNumber") String cardNumber, @RequestParam("passWord") String passWord,
                                             @RequestParam("userName") String userName, @RequestParam("UUID") String UUID) {
