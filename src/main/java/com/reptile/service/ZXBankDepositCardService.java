@@ -45,7 +45,7 @@ public class ZXBankDepositCardService {
      */
     public Map<String, Object> getDetailMes(HttpServletRequest request, String IDNumber, String cardNumber, String userName, String passWord, String UUID) {
         Map<String, Object> map = new HashMap<String, Object>();
-        PushSocket.pushnew(map, UUID, "1000","登录中信银行网上银行");
+        PushSocket.pushnew(map, UUID, "1000", "登录中信银行网上银行");
         PushState.state(cardNumber, "savings", 100);
         System.setProperty("webdriver.ie.driver", "C:/ie/IEDriverServer.exe");
         InternetExplorerDriver driver = new InternetExplorerDriver();
@@ -63,9 +63,11 @@ public class ZXBankDepositCardService {
 //                VirtualKeyBoard.KeyPress(passWord.charAt(i));
 //                Thread.sleep(200);
 //            }
-            SendKeys.sendTab();
-            Thread.sleep(1000);
-			 SendKeys.sendStr(passWord);
+            SendKeys.sendStr(1400, 250, passWord);
+
+//            SendKeys.sendTab();
+//            Thread.sleep(1000);
+//			 SendKeys.sendStr(passWord);
             //判断是否存在验证码
             try {
                 WebElement pinImg = driver.findElementById("pinImg");
@@ -91,8 +93,8 @@ public class ZXBankDepositCardService {
                 logger.warn("登录失败！" + errorReason.getText());
                 map.put("errorCode", "0002");
                 map.put("errorInfo", errorReason.getText());
-                PushSocket.pushnew(map, UUID, "3000","中信银行登陆失败,"+errorReason.getText());
-                PushState.state(cardNumber, "savings", 200,errorReason.getText());
+                PushSocket.pushnew(map, UUID, "3000", "中信银行登陆失败," + errorReason.getText());
+                PushState.state(cardNumber, "savings", 200, errorReason.getText());
                 driver.quit();
                 return map;
             } catch (NoSuchElementException e) {
@@ -100,65 +102,70 @@ public class ZXBankDepositCardService {
             } catch (UnhandledAlertException e) {
                 map.put("errorCode", "0002");
                 map.put("errorInfo", "账号或密码格式不正确！");
-                PushSocket.pushnew(map, UUID, "3000","中信银行登陆失败,账号或密码格式不正确！");
-                PushState.state(cardNumber, "savings", 200,"中信银行登陆失败,账号或密码格式不正确！");
+                PushSocket.pushnew(map, UUID, "3000", "中信银行登陆失败,账号或密码格式不正确！");
+                PushState.state(cardNumber, "savings", 200, "中信银行登陆失败,账号或密码格式不正确！");
                 driver.quit();
                 return map;
             }
 //            PushSocket.push(map, UUID, "0000");
-            PushSocket.pushnew(map, UUID, "2000","中信银行登陆成功");
+            PushSocket.pushnew(map, UUID, "2000", "中信银行登陆成功");
             logger.warn("获取账单详情...");
             //获取类似于tooken的标识
-            PushSocket.pushnew(map, UUID, "5000","中信银行信息获取中");
+            PushSocket.pushnew(map, UUID, "5000", "中信银行信息获取中");
             String EMP_SID = driver.findElementByName("infobarForm").findElement(By.name("EMP_SID")).getAttribute("value");
             //获取账单详情
             List<String> dataList = new ArrayList<String>();
-          try{  
-            dataList = getItemMes(driver, EMP_SID, dataList);
-            map.put("itemMes", dataList);
-            logger.warn("获取账单详情成功");
-            logger.warn("获取基本信息");
-            //发包获取基本信息
-            driver.get("https://i.bank.ecitic.com/perbank6/pb1110_query_detail.do?EMP_SID=" + EMP_SID + "&accountNo=" + cardNumber + "&index=0ff0 ");
-          }catch(Exception e){
-        	  PushSocket.pushnew(map, UUID, "7000","中信银行信息获取失败");
-          }
+            String baseMes = "";
+            try {
+                dataList = getItemMes(driver, EMP_SID, dataList);
+                map.put("itemMes", dataList);
+                logger.warn("获取账单详情成功");
+                logger.warn("获取基本信息");
+                //发包获取基本信息
+                driver.get("https://i.bank.ecitic.com/perbank6/pb1110_query_detail.do?EMP_SID=" + EMP_SID + "&accountNo=" + cardNumber + "&index=0ff0 ");
+                Thread.sleep(2000);
+                baseMes = driver.getPageSource();
+            } catch (Exception e) {
+                map.put("errorCode", "0002");
+                map.put("errorInfo", "获取账单过程中出现异常，请重试！");
+                PushSocket.pushnew(map, UUID, "7000", "中信银行信息获取失败");
+                PushState.state(cardNumber, "savings", 200, "中信银行信息获取失败");
+                driver.quit();
+                return map;
+            }
             Thread.sleep(1000);
-            String baseMes = driver.getPageSource();
+
             map.put("baseMes", baseMes);
             map = analyData(map);
             map.put("IDNumber", IDNumber);
             map.put("cardNumber", cardNumber);
             map.put("userName", userName);
             map.put("bankName", "中信银行");
-            map.put("userAccount",cardNumber);
-            
+            map.put("userAccount", cardNumber);
+
             logger.warn("中信银行数据推送...");
-            PushSocket.pushnew(map, UUID, "6000","中信银行信息获取成功");
+            PushSocket.pushnew(map, UUID, "6000", "中信银行信息获取成功");
             //推送数据
             map = new Resttemplate().SendMessage(map, ConstantInterface.port + "/HSDC/savings/authentication");
-            if(map!=null&&"0000".equals(map.get("errorCode").toString())){
-              map.put("errorInfo","查询成功");
-              map.put("errorCode","0000");
-              PushSocket.pushnew(map, UUID, "8000","中信银行认证成功");
-              PushState.state(cardNumber, "savings", 300);
-              driver.quit();
-          }else{
-          	//--------------------数据中心推送状态----------------------
-          	 PushSocket.pushnew(map, UUID, "9000","中信银行认证失败"+map.get("errorInfo").toString());
-          	PushState.state(cardNumber, "savings", 200,map.get("errorInfo").toString());
-          	driver.quit();
-          	//---------------------数据中心推送状态----------------------
-//          	logger.warn("光大银行储蓄卡推送失败"+IDNumber);
-          	
-          }
+            if (map != null && "0000".equals(map.get("errorCode").toString())) {
+                map.put("errorInfo", "查询成功");
+                map.put("errorCode", "0000");
+                PushSocket.pushnew(map, UUID, "8000", "中信银行认证成功");
+                PushState.state(cardNumber, "savings", 300);
+            } else {
+                //--------------------数据中心推送状态----------------------
+                PushSocket.pushnew(map, UUID, "9000", "中信银行认证失败" + map.get("errorInfo").toString());
+                PushState.state(cardNumber, "savings", 200, map.get("errorInfo").toString());
+                //---------------------数据中心推送状态----------------------
+
+            }
             logger.warn("中信银行数据推送成功");
             driver.quit();//关闭浏览器
         } catch (Exception e) {
             driver.quit();
             logger.warn("中信银行认证失败", e);
-            PushSocket.pushnew(map, UUID, "7000","中信银行信息获取失败");
-            PushState.state(cardNumber, "savings", 200,"中信银行信息获取失败");
+            PushSocket.pushnew(map, UUID, "7000", "中信银行信息获取失败");
+            PushState.state(cardNumber, "savings", 200, "中信银行信息获取失败");
             map.clear();
             map.put("errorCode", "0001");
             map.put("errorInfo", "网络请求异常，请稍后再试");
@@ -177,7 +184,7 @@ public class ZXBankDepositCardService {
      */
     public List<String> getItemMes(InternetExplorerDriver driver, String EMP_SID, List<String> dataList) throws Exception {
         //将mainframe切换到详单页面
-  
+
         driver.executeScript("document.getElementById(\"mainframe\").src=\"https://i.bank.ecitic.com/perbank6/pb1310_account_detail_query.do?EMP_SID=" + EMP_SID + "\" ");
         Thread.sleep(2000);
         WebElement mainframe = driver.findElementById("mainframe");
