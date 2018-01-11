@@ -18,9 +18,6 @@ public class PushSocket {
 		System.out.println(se);
 		System.out.println(seq_id);
 		try {
-//			mapData.put("resultCode", errorInfo);
-//			mapData.put("seq_id", seq_id);
-//			JSONObject json=JSONObject.fromObject(mapData);
 			if(se!=null&&seq_id!=null){
 				if(seq_id.equals("hello")){
 					se.getBasicRemote().sendText("{\"resultCode\":\""+errorInfo+"\",\"seq_id\":\""+seq_id+"\"}");
@@ -29,16 +26,12 @@ public class PushSocket {
 				}
 				
 			}
-		
-			//se.getBasicRemote().sendObject(json);
-			
 		} catch (Exception e) {
 			  map.put("errorCode", "0001");
 			  map.put("errorInfo", "网络异常");
 			e.printStackTrace();
 		}
 		return map;
-		
 	}
 	/**
 	   * 0001 失败 0000 成功 1000登陆中
@@ -61,7 +54,6 @@ public class PushSocket {
 	        if(seq_id.equals("hello")){
 	          se.getBasicRemote().sendText("{\"resultCode\":\""+resultCode+"\",\"seq_id\":\""+seq_id+"\",\"errorInfor\":\""+errorInfor+"\",\"date\":\""+date+"\"}");
 	        }else{
-	          //se.getBasicRemote().sendText("{\"resultCode\":"+resultCode+",\"seq_id\":"+seq_id+"}");  
 	          se.getBasicRemote().sendText("{\"resultCode\":"+resultCode+",\"seq_id\":"+seq_id+",\"errorInfor\":\""+errorInfor+"\",\"date\":\""+date+"\"}");
 	        }
 	      }
