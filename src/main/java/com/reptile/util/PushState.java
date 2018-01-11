@@ -9,8 +9,6 @@ import java.util.Map;
 
 public class PushState {
     private static Logger log = LoggerFactory.getLogger(PushState.class);
-
-
     public static void state(String UserCard, String approveName, int stat) {
 
 //		application applications=new application();

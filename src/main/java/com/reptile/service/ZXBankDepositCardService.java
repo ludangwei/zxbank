@@ -46,7 +46,7 @@ public class ZXBankDepositCardService {
     public Map<String, Object> getDetailMes(HttpServletRequest request, String IDNumber, String cardNumber, String userName, String passWord, String UUID) {
         Map<String, Object> map = new HashMap<String, Object>();
         PushSocket.pushnew(map, UUID, "1000", "登录中信银行网上银行");
-        PushState.state(cardNumber, "savings", 100);
+        PushState.state(IDNumber, "savings", 100);
         System.setProperty("webdriver.ie.driver", "C:/ie/IEDriverServer.exe");
         InternetExplorerDriver driver = new InternetExplorerDriver();
         driver.manage().window().maximize();
@@ -95,7 +95,7 @@ public class ZXBankDepositCardService {
                 map.put("errorCode", "0002");
                 map.put("errorInfo", errorReason.getText());
                 PushSocket.pushnew(map, UUID, "3000", "中信银行登陆失败," + errorReason.getText());
-                PushState.state(cardNumber, "savings", 200, errorReason.getText());
+                PushState.state(IDNumber, "savings", 200, errorReason.getText());
                 driver.quit();
                 return map;
             } catch (NoSuchElementException e) {
@@ -104,7 +104,7 @@ public class ZXBankDepositCardService {
                 map.put("errorCode", "0002");
                 map.put("errorInfo", "账号或密码格式不正确！");
                 PushSocket.pushnew(map, UUID, "3000", "中信银行登陆失败,账号或密码格式不正确！");
-                PushState.state(cardNumber, "savings", 200, "中信银行登陆失败,账号或密码格式不正确！");
+                PushState.state(IDNumber, "savings", 200, "中信银行登陆失败,账号或密码格式不正确！");
                 driver.quit();
                 return map;
             }
@@ -130,7 +130,7 @@ public class ZXBankDepositCardService {
                 map.put("errorCode", "0002");
                 map.put("errorInfo", "获取账单过程中出现异常，请重试！");
                 PushSocket.pushnew(map, UUID, "7000", "中信银行信息获取失败");
-                PushState.state(cardNumber, "savings", 200, "中信银行信息获取失败");
+                PushState.state(IDNumber, "savings", 200, "中信银行信息获取失败");
                 driver.quit();
                 return map;
             }
@@ -152,11 +152,11 @@ public class ZXBankDepositCardService {
                 map.put("errorInfo", "查询成功");
                 map.put("errorCode", "0000");
                 PushSocket.pushnew(map, UUID, "8000", "中信银行认证成功");
-                PushState.state(cardNumber, "savings", 300);
+                PushState.state(IDNumber, "savings", 300);
             } else {
                 //--------------------数据中心推送状态----------------------
                 PushSocket.pushnew(map, UUID, "9000", "中信银行认证失败" + map.get("errorInfo").toString());
-                PushState.state(cardNumber, "savings", 200, map.get("errorInfo").toString());
+                PushState.state(IDNumber, "savings", 200, map.get("errorInfo").toString());
                 //---------------------数据中心推送状态----------------------
 
             }
@@ -166,7 +166,7 @@ public class ZXBankDepositCardService {
             driver.quit();
             logger.warn("中信银行认证失败", e);
             PushSocket.pushnew(map, UUID, "7000", "中信银行信息获取失败");
-            PushState.state(cardNumber, "savings", 200, "中信银行信息获取失败");
+            PushState.state(IDNumber, "savings", 200, "中信银行信息获取失败");
             map.clear();
             map.put("errorCode", "0001");
             map.put("errorInfo", "网络请求异常，请稍后再试");
