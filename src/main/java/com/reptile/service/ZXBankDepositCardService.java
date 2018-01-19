@@ -64,6 +64,7 @@ public class ZXBankDepositCardService {
 //                Thread.sleep(200);
 //            }
             SendKeys.sendStr(1400, 250, passWord);
+//            SendKeys.sendStr(1422, 322, passWord);//本地弹框
 
 //            SendKeys.sendTab();
 //            Thread.sleep(1000);
@@ -155,7 +156,7 @@ public class ZXBankDepositCardService {
                 PushState.state(IDNumber, "savings", 300);
             } else {
                 //--------------------数据中心推送状态----------------------
-                PushSocket.pushnew(map, UUID, "9000", "中信银行认证失败" + map.get("errorInfo").toString());
+                PushSocket.pushnew(map, UUID, "9000", map.get("errorInfo").toString());
                 PushState.state(IDNumber, "savings", 200, map.get("errorInfo").toString());
                 //---------------------数据中心推送状态----------------------
 
