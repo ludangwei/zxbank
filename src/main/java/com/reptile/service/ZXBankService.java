@@ -311,6 +311,7 @@ public class ZXBankService {
 
 
                 List dataList = new ArrayList();
+                int countError=0;
                 for (int i = 0; i < cardlist1.size(); i++) {
                     net.sf.json.JSONObject jsonObject2 = cardlist1.getJSONObject(i);
                     String card_nbr = jsonObject2.get("card_nbr").toString();
@@ -356,10 +357,27 @@ public class ZXBankService {
                         NameValuePair param71 = new NameValuePair("startpos", "1");
                         postMeth.setRequestBody(new NameValuePair[]{param11, param21, param31, param41, param51, param61, param71});
                         httpClient.executeMethod(postMeth);
-                        dataList.add(postMeth.getResponseBodyAsString());
+
+                        String dataResult=postMeth.getResponseBodyAsString();
+                        if(!dataResult.contains("网络繁忙")){
+                            dataList.add(dataResult);
+                        }else{
+                            countError++;
+                        }
                         Thread.sleep(500);
                     }
                 }
+
+                if(countError>1){
+                    logger.warn(userCard+":中信银行信用卡获取账单过程中出现账单内容为网络繁忙，false--------errorCount次数为"+countError);
+                    PushSocket.pushnew(map, UUID, "7000", "数据获取过程中出现网络故障");
+                    PushState.state(userCard, "bankBillFlow", 200, "数据获取过程中出现网络故障");
+                    map.put("errorCode", "0009");
+                    map.put("errorInfo", "数据获取不完全，请重新再次认证！");
+                    return map;
+                }
+                logger.warn(userCard+":中信银行信用卡获取账单过程中出现账单为网络繁忙，正常--------errorCount次数为"+countError);
+
                 PushSocket.pushnew(map, UUID, "6000","中信银行信息获取成功");
                 flag="6000";
 

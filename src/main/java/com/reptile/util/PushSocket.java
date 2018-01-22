@@ -35,8 +35,8 @@ public class PushSocket {
 
 		String actionType = "oldLink";
 		if (UUID.contains("+")) {
-			logger.warn("--------------------新版本长连接。本次连接目标为："+UUID+"--------actionType:"+actionType);
 			actionType = (UUID.split("\\+"))[1];
+			logger.warn("--------------------新版本长连接。本次连接目标为："+UUID+"--------actionType:"+actionType);
 		}
 
 		try {
