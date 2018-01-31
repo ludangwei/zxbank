@@ -2,6 +2,7 @@ package com.reptile.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import sun.rmi.runtime.Log;
 
 import java.util.HashMap;
@@ -77,4 +78,34 @@ public class PushState {
         map1 = resttemplatestati.SendMessage(data, ConstantInterface.port + "/HSDC/authcode/messagePush");
         log.warn(UserCard + "：本次推送内容完成,推送结果为"+map1);
     }
+    /**
+     * 状态码为200使用该方法进行推送 
+     * @param UserCard
+     * @param approveName
+     * @param stat
+     * @param message
+     * @param flag true或false
+     */
+    public static void stateByFlag(String UserCard,String approveName ,int stat,String message,boolean flag) {
+      if(flag) {
+        PushState.state(UserCard, approveName, stat,message);
+      }else {
+        PushState.stateX(UserCard, approveName, stat,message);
+      }
+    }
+    
+    /**
+     * 状态码为100或300使用该方法进行推送 
+     * @param UserCard
+     * @param approveName
+     * @param stat
+     * @param message
+     * @param flag true或false
+     */
+    public static void stateByFlag(String UserCard,String approveName ,int stat,boolean flag) {
+      if(flag) {
+        PushState.state(UserCard, approveName, stat);
+      }
+    }
+    
 }

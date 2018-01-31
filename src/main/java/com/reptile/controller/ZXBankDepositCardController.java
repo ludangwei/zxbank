@@ -30,10 +30,11 @@ public class ZXBankDepositCardController {
 //    @CustomAnnotation
     public Map<String, Object> getDetailMes(HttpServletRequest request, @RequestParam("IDNumber") String IDNumber,
                                             @RequestParam("cardNumber") String cardNumber, @RequestParam("passWord") String passWord,
-                                            @RequestParam("userName") String userName, @RequestParam("UUID") String UUID) {
+                                            @RequestParam("userName") String userName, @RequestParam("UUID") String UUID, 
+                                            @RequestParam("flag") boolean flag) {
         Map<String, Object> detailMes;
         synchronized (this) {
-            detailMes = service.getDetailMes(request, IDNumber, cardNumber, userName, passWord, UUID);
+            detailMes = service.getDetailMes(request, IDNumber, cardNumber, userName, passWord, UUID,flag);
         }
         return detailMes;
     }
