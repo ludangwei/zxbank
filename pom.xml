@@ -115,12 +115,12 @@
 			<artifactId>json</artifactId>
 			<version>20151123</version>
 		</dependency>
-	<!-- 模拟键盘 -->
-	<dependency>
-        <groupId>com.hoomsun</groupId>
-        <artifactId>keyBoard</artifactId>
-        <version>1.64.64</version>
-    </dependency>
+	<!-- 控件处理 -->
+		<dependency>
+			<groupId>com.hoomsun.keyBoard</groupId>
+			<artifactId>keyBoard</artifactId>
+			<version>0.0.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
