@@ -63,8 +63,8 @@ public class ZXBankDepositCardService {
             driver.findElementByName("logonNoCert").sendKeys(cardNumber);
             //Map<String,Integer> ss = Image.findImageFullScreen("C:\\searchImg\\screen.png", "C:\\searchImg\\search.png", "C:\\searchImg\\rest.png");
             //SendKeys.sendStr(ss.get("x")+100, ss.get("y"), passWord);
-//            SendKeys.sendStr(1422, 322, passWord);
-            SendKeys.sendStr(1400, 250, passWord);
+             SendKeys.sendStr(1414, 314, passWord);//正式
+             // SendKeys.sendStr(1400, 250, passWord);
             //判断是否存在验证码
             try {
                 WebElement pinImg = driver.findElementById("pinImg");
@@ -115,7 +115,7 @@ public class ZXBankDepositCardService {
             String baseMes = "";
             try {
                 //----------------原方法---------------------------
-                /*dataList = getItemMes(driver, EMP_SID, dataList);
+               /* dataList = getItemMes(driver, emp_sid, dataList);
                 map.put("itemMes", dataList);
             	logger.warn("获取基本信息");
             	//发包获取基本信息
@@ -133,12 +133,12 @@ public class ZXBankDepositCardService {
                 }
                 String cookie = cookies.toString();
                 driver.quit();
-                logger.warn("发包获取账单");
+                logger.warn("发包获取账单"+emp_sid+cardNumber);
                 dataList = getItemMesfb(emp_sid, dataList,cardNumber,cookie);
                 map.put("itemMes", dataList);
 
                 logger.warn("发包获取基本信息");
-                Map<String,String> headers=new HashMap<String, String>();
+                 Map<String,String> headers=new HashMap<String, String>();
                 headers.put("Accept", "*/*");
                 headers.put("Accept-Encoding", "gzip, deflate");
                 headers.put("Accept-Language", "zh-CN");
@@ -213,7 +213,6 @@ public class ZXBankDepositCardService {
         String nowMonth=endTime.substring(4, 6);
         int nowMonth1=Integer.parseInt(nowMonth);
         String beginTime=beforMonth(year1, nowMonth1, 6);
-        System.out.println(endTime+","+beginTime);
         try {
 
             //第一次发包开始
@@ -236,8 +235,10 @@ public class ZXBankDepositCardService {
                     + ".NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)");
 
             String response11=SimpleHttpClient.post(url11,params11, headers11);
-
+            
+            
             Document parse = Jsoup.parse(response11);
+            logger.warn("第一次发包数据结果"+parse);
             Elements isubAccInfoaccountNo0 = parse.getElementsByAttributeValue("name", "isubAccInfo.accountNo");
             String isubAccInfoaccountNo = isubAccInfoaccountNo0.get(0).attr("value");
 
@@ -482,20 +483,58 @@ public class ZXBankDepositCardService {
         Map<String, Object> detailMap;  //存放当月的交易详情
 
         for (int index = 0; index < itemMes.size(); index++) {
+            String s = itemMes.get(index).replaceAll("TBODY", "table").replaceAll("tbody", "table");
+            logger.warn("itemMes===="+itemMes);
+            logger.warn("s===="+s);
+            Document parse = Jsoup.parse(s);
+            Elements tbody = parse.getElementsByTag("table");
+            logger.warn("tbody===="+tbody);
+            Elements tr = tbody.get(0).getElementsByTag("tr");
+            for (int i = 0; i < tr.size(); i++) {
+                Elements td = tr.get(i).getElementsByTag("td");
+                detailMap = new HashMap<String, Object>();
+                detailMap.put("dealTime", td.get(2).text().replace(" ", ""));
+                detailMap.put("expendMoney", td.get(3).text().replace("  ", ""));
+                detailMap.put("incomeMoney", td.get(4).text().replace("  ", ""));
+                detailMap.put("balanceAmount", td.get(5).text().replace(" ", ""));
+                detailMap.put("oppositeSideName", td.get(6).text());
+                detailMap.put("dealDitch", td.get(7).text().replace(" ", ""));
+                detailMap.put("dealReferral", td.get(8).text().replace(" ", ""));
+                dataList.add(detailMap);
+            }
+
+        }
+        return dataList;
+    }
+
+
+    /**
+     * 解析账单信息
+     *
+     * @param itemMes
+     * @return
+     */
+    private List analyBillMethodfb(List<String> itemMes) throws Exception {
+        List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
+        Map<String, Object> detailMap;  //存放当月的交易详情
+
+        for (int index = 0; index < itemMes.size(); index++) {
+        	System.out.println();
             String s = itemMes.get(index).replaceAll("tbody", "table");
             Document parse = Jsoup.parse(s);
+            System.out.println("parse==="+parse);
             Elements tbody = parse.getElementsByTag("table");
             Elements tr = tbody.get(0).getElementsByTag("tr");
             for (int i = 0; i < tr.size(); i++) {
                 Elements td = tr.get(i).getElementsByTag("td");
                 detailMap = new HashMap<String, Object>();
-                detailMap.put("dealTime", td.get(2).text());
-                detailMap.put("expendMoney", td.get(3).text());
-                detailMap.put("incomeMoney", td.get(4).text());
-                detailMap.put("balanceAmount", td.get(5).text());
+                detailMap.put("dealTime", td.get(2).text().replace(" ", ""));
+                detailMap.put("expendMoney", td.get(3).text().replace("  ", ""));
+                detailMap.put("incomeMoney", td.get(4).text().replace("  ", ""));
+                detailMap.put("balanceAmount", td.get(5).text().replace(" ", ""));
                 detailMap.put("oppositeSideName", td.get(6).text());
-                detailMap.put("dealDitch", td.get(7).text());
-                detailMap.put("dealReferral", td.get(8).text());
+                detailMap.put("dealDitch", td.get(7).text().replace(" ", ""));
+                detailMap.put("dealReferral", td.get(8).text().replace(" ", ""));
                 dataList.add(detailMap);
             }
 
