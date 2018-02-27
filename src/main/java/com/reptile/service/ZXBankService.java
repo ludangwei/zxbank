@@ -398,10 +398,10 @@ public class ZXBankService {
                     map.put("errorInfo","查询成功");
                     map.put("errorCode","0000");
                     PushSocket.pushnew(map, UUID, "8000","中信银行信用卡认证成功");
-                    if(isok==true) {
-                     	PushState.state(userCard, "bankBillFlow", 300);
-                     }
-                    //PushState.stateByFlag(userCard,"bankBillFlow",300,isok);
+//                    if(isok==true) {
+//                     	PushState.state(userCard, "bankBillFlow", 300);
+//                     }
+                    PushState.stateByFlag(userCard,"bankBillFlow",300,isok);
                 }else{
                 	//--------------------数据中心推送状态----------------------
                 	 PushSocket.pushnew(map, UUID, "9000","中信银行信用卡认证失败"+map.get("errorInfo").toString());
