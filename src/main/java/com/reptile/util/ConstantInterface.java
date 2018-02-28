@@ -6,8 +6,8 @@ package com.reptile.util;
  */
 public interface ConstantInterface {
 //  public static final String port="http://192.168.3.4:8081";  //推送地址的ip地址
-//    public static final String port="http://10.1.1.12:8080";  //外网
+    public static final String port="http://10.1.1.12:8080";  //外网
 //	public static final String port="http://10.1.1.12:8080";  //推送地址的ip地址
-	 public static final String port="http://117.34.70.217:8080";  //外网
+//	 public static final String port="http://117.34.70.217:8080";  //测试
 }
 

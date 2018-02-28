@@ -49,6 +49,7 @@ public class ZXBankDepositCardService {
      */
     public Map<String, Object> getDetailMes(HttpServletRequest request, String IDNumber, String cardNumber, String userName, String passWord, String UUID, boolean flag) {
         Map<String, Object> map = new HashMap<String, Object>();
+        int flagInfo = 0;
         PushSocket.pushnew(map, UUID, "1000", "登录中信银行网上银行");
         PushState.stateByFlag(IDNumber, "savings", 100,flag);
         System.setProperty("java.awt.headless", "false");
@@ -106,6 +107,7 @@ public class ZXBankDepositCardService {
             }
 //            PushSocket.push(map, UUID, "0000");
             PushSocket.pushnew(map, UUID, "2000", "中信银行登陆成功");
+            flagInfo = 1;
             logger.warn("获取账单详情...");
             //获取类似于tooken的标识
             PushSocket.pushnew(map, UUID, "5000", "中信银行信息获取中");
@@ -175,6 +177,7 @@ public class ZXBankDepositCardService {
             System.out.println("我的结果=="+map);
             logger.warn("中信银行数据推送...");
             PushSocket.pushnew(map, UUID, "6000", "中信银行信息获取成功");
+            flagInfo = 2;
             //推送数据
             map = new Resttemplate().SendMessage(map, ConstantInterface.port + "/HSDC/savings/authentication");
             if (map != null && "0000".equals(map.get("errorCode").toString())) {
@@ -194,8 +197,17 @@ public class ZXBankDepositCardService {
         } catch (Exception e) {
             driver.quit();
             logger.warn("中信银行认证失败", e);
-            PushSocket.pushnew(map, UUID, "7000", "中信银行信息获取失败");
-            PushState.stateByFlag(IDNumber, "savings", 200, "中信银行信息获取失败",flag);
+            if(flagInfo==0) {
+            	PushSocket.pushnew(map, UUID, "3000", "服务器繁忙");
+                PushState.stateByFlag(IDNumber, "savings", 200, "服务器繁忙",flag);
+            }else if(flagInfo==1) {
+            	PushSocket.pushnew(map, UUID, "7000", "服务器繁忙");
+                PushState.stateByFlag(IDNumber, "savings", 200, "服务器繁忙",flag);
+            }
+            else if(flagInfo==2) {
+            	PushSocket.pushnew(map, UUID, "9000", "服务器繁忙");
+                PushState.stateByFlag(IDNumber, "savings", 200, "服务器繁忙",flag);
+            }
             map.clear();
             map.put("errorCode", "0001");
             map.put("errorInfo", "网络请求异常，请稍后再试");
