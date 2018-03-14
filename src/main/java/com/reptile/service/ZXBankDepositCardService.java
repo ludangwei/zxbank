@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.NoSuchElementException;
@@ -99,7 +100,24 @@ public class ZXBankDepositCardService {
             driver.findElementById("logonButton").click();
             Thread.sleep(4000);
             //判断是否登录成功
+            //判断是否有弹框          
             try {
+				Alert alt = driver.switchTo().alert();//监控弹框
+				String errorInfo = alt.getText();
+				if(errorInfo.contains("验证码")){
+					logger.warn("********中信银行储蓄卡打码出错***********");
+					errorInfo = "网络连接超时";
+				}
+				map.put("errorCode", "0002");
+                map.put("errorInfo", errorInfo);
+                PushSocket.pushnew(map, UUID, "3000", "中信银行登陆失败," + errorInfo);
+                PushState.stateByFlag(IDNumber, "savings", 200, errorInfo,flag);
+                driver.quit();
+                return map;
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			try {
                 WebElement errorReason = driver.findElementByClassName("errorReason");
                 logger.warn("登录失败！" + errorReason.getText());
                 map.put("errorCode", "0002");
