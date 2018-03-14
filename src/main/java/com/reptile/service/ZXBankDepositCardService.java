@@ -18,8 +18,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.UnhandledAlertException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -48,10 +51,10 @@ public class ZXBankDepositCardService {
      * @return
      */
     public Map<String, Object> getDetailMes(HttpServletRequest request, String IDNumber, String cardNumber, String userName, String passWord, String UUID, boolean flag) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        int flagInfo = 0;
+        Map<String, Object> map = new HashMap<String, Object>();        
         PushSocket.pushnew(map, UUID, "1000", "登录中信银行网上银行");
         PushState.stateByFlag(IDNumber, "savings", 100,flag);
+        int flagInfo = 0;
         System.setProperty("java.awt.headless", "false");
         System.setProperty("webdriver.ie.driver", "C:/ie/IEDriverServer.exe");
         InternetExplorerDriver driver = new InternetExplorerDriver();
@@ -61,11 +64,21 @@ public class ZXBankDepositCardService {
             driver.get("https://i.bank.ecitic.com/perbank6/signIn.do");
             Thread.sleep(1000);
             //输入账户名密码
-            driver.findElementByName("logonNoCert").sendKeys(cardNumber);
+//            if(waitByClassName("logonNoCert", driver, 10)) {
+            	driver.findElementByName("logonNoCert").sendKeys(cardNumber);
+//            }else {
+//            	logger.warn("**************登录失败！10秒钟账号输入框未出现**************");
+//                map.put("errorCode", "0002");
+//                map.put("errorInfo", "服务器繁忙");
+//                PushSocket.pushnew(map, UUID, "3000", "中信银行登陆失败,服务器繁忙");
+//                PushState.stateByFlag(IDNumber, "savings", 200, "中信银行登陆失败,服务器繁忙",flag);
+//                driver.quit();
+//                return map;
+//            }
             //Map<String,Integer> ss = Image.findImageFullScreen("C:\\searchImg\\screen.png", "C:\\searchImg\\search.png", "C:\\searchImg\\rest.png");
             //SendKeys.sendStr(ss.get("x")+100, ss.get("y"), passWord);
              SendKeys.sendStr(1414, 314, passWord);//正式
-             // SendKeys.sendStr(1400, 250, passWord);
+//              SendKeys.sendStr(1400, 255, passWord);
             //判断是否存在验证码
             try {
                 WebElement pinImg = driver.findElementById("pinImg");
@@ -84,7 +97,7 @@ public class ZXBankDepositCardService {
             }
             //登录
             driver.findElementById("logonButton").click();
-            Thread.sleep(3000);
+            Thread.sleep(4000);
             //判断是否登录成功
             try {
                 WebElement errorReason = driver.findElementByClassName("errorReason");
@@ -105,13 +118,13 @@ public class ZXBankDepositCardService {
                 driver.quit();
                 return map;
             }
-//            PushSocket.push(map, UUID, "0000");
+            
+            //获取类似于tooken的标识            
+            String emp_sid = driver.findElementByName("infobarForm").findElement(By.name("EMP_SID")).getAttribute("value");
             PushSocket.pushnew(map, UUID, "2000", "中信银行登陆成功");
             flagInfo = 1;
             logger.warn("获取账单详情...");
-            //获取类似于tooken的标识
             PushSocket.pushnew(map, UUID, "5000", "中信银行信息获取中");
-            String emp_sid = driver.findElementByName("infobarForm").findElement(By.name("EMP_SID")).getAttribute("value");
             //获取账单详情
             List<String> dataList = new ArrayList<String>();
             String baseMes = "";
@@ -180,19 +193,22 @@ public class ZXBankDepositCardService {
             flagInfo = 2;
             //推送数据
             map = new Resttemplate().SendMessage(map, ConstantInterface.port + "/HSDC/savings/authentication");
+            logger.warn("数据中心返回map"+map.toString());
             if (map != null && "0000".equals(map.get("errorCode").toString())) {
                 map.put("errorInfo", "查询成功");
                 map.put("errorCode", "0000");
                 PushSocket.pushnew(map, UUID, "8000", "中信银行认证成功");
                 PushState.stateByFlag(IDNumber, "savings", 300,flag);
+                logger.warn("中信银行数据推送成功");
             } else {
                 //--------------------数据中心推送状态----------------------
                 PushSocket.pushnew(map, UUID, "9000", "中信银行认证失败" + map.get("errorInfo").toString());
                 PushState.stateByFlag(IDNumber, "savings", 200, map.get("errorInfo").toString(),flag);
+                logger.warn("中信银行数据推送失败");
                 //---------------------数据中心推送状态----------------------
 
             }
-            logger.warn("中信银行数据推送成功");
+            
             driver.quit();//关闭浏览器
         } catch (Exception e) {
             driver.quit();
@@ -587,4 +603,19 @@ public class ZXBankDepositCardService {
         return sdf.format(cal.getTime());
 
     }
+    /**
+	 * 显示等待，通过className来判断元素是否存在
+	 * @param className 
+	 * @param driver 
+	 * @param time 多长时间关闭 单位 秒
+	 */
+	public static boolean waitByClassName(String className,WebDriver driver,int time){
+		WebDriverWait wite = new WebDriverWait(driver,time);
+		try {
+			wite.until(ExpectedConditions.presenceOfElementLocated(By.className(className)));
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
 }

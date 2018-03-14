@@ -218,11 +218,9 @@ public class ZXBanInfo {
                 flag="6000";
 
                 Map<String, Object> sendMap = new HashMap<String, Object>();
-                
-                
-                
 	            sendMap.put("bankList", dataList);
 
+	            
                 logger.warn(sendMap.toString()+"   mrlu");
                 //推送信息
                 Map<String, Object> mapTui = new HashMap<String, Object>();
@@ -230,9 +228,13 @@ public class ZXBanInfo {
                 mapTui.put("backtype", "CCB");
 	            mapTui.put("idcard", userCard);
 	            mapTui.put("bankname", "中信");
-	            sendMap.put("userAccount",phoneCode);
+	            mapTui.put("userAccount",phoneCode);	            
+	            
+	            
+	            
+	            
                 Resttemplate rs = new Resttemplate();
-                map = rs.NewSendMessage(mapTui, ConstantInterface.port + "/HSDC/BillFlow/BillFlowByreditCard");
+                map = rs.SendMessage(mapTui, ConstantInterface.port + "/HSDC/BillFlow/BillFlowByreditCard");
                 if(map!=null&&"0000".equals(map.get("errorCode").toString())){
                     map.put("errorInfo","查询成功");
                     map.put("errorCode","0000");
@@ -268,10 +270,12 @@ public class ZXBanInfo {
                  }
                 map.put("errorCode", "0002");
                 map.put("errorInfo", "查询出错");
-            }
+            }        
         }
+	
         return map;
     }
+
 	
 	public static Map<String, Object> getInfos(String dataResult,String fixedEd) {
 		Map<String, Object> bankList = new HashMap<String, Object>();
@@ -301,13 +305,13 @@ public class ZXBanInfo {
 		bankList.put("AccountSummary", accountSummary);
 		return bankList;		
 	}
+	public static void main(String[] args) {
+		Map<String,Object> map=net.sf.json.JSONObject.fromObject("{\"userAccount\":\"6226580046023293\",\"idcard\":\"610111199203252021\",\"data\":{\"bankList\":[{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"1000.00\",\"CreditLimit\":\"20000.00\",\"RMBCurrentAmountDue\":\"20000.00\",\"StatementDate\":\"20180212\",\"PaymentDueDate\":\"20180303\"},\"payRecord\":[{\"tran_date\":\"20180131\",\"tran_desc\":\"已收妥您的款项\",\"post_amt\":\"15375.00\"},{\"tran_date\":\"20180201\",\"tran_desc\":\"（特约）北京至尊荟 广东省\",\"post_amt\":\"1000.00\"},{\"tran_date\":\"20180201\",\"tran_desc\":\"陕西省西安市雁塔区 西安市\",\"post_amt\":\"14000.00\"},{\"tran_date\":\"20180205\",\"tran_desc\":\"（特约）北京至尊荟 广东省\",\"post_amt\":\"5000.00\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"1125.00\",\"CreditLimit\":\"20000.00\",\"RMBCurrentAmountDue\":\"15375.00\",\"StatementDate\":\"20180112\",\"PaymentDueDate\":\"20180131\"},\"payRecord\":[{\"tran_date\":\"20171221\",\"tran_desc\":\"西安市新城区宏轩服\",\"post_amt\":\"15000.00\"},{\"tran_date\":\"20171221\",\"tran_desc\":\"已收妥您的款项\",\"post_amt\":\"398.85\"},{\"tran_date\":\"20180112\",\"tran_desc\":\"2月份账单取现分期12期：本期应还款375.00，余额0.00，余期为00期\",\"post_amt\":\"0.00\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"398.85\",\"CreditLimit\":\"20000.00\",\"RMBCurrentAmountDue\":\"398.85\",\"StatementDate\":\"20171212\",\"PaymentDueDate\":\"20171231\"},\"payRecord\":[{\"tran_date\":\"20171204\",\"tran_desc\":\"违约金\",\"post_amt\":\"18.75\"},{\"tran_date\":\"20171209\",\"tran_desc\":\"已收妥您的款项\",\"post_amt\":\"375.00\"},{\"tran_date\":\"20171212\",\"tran_desc\":\"分期利息\",\"post_amt\":\"5.10\"},{\"tran_date\":\"20171212\",\"tran_desc\":\"2月份账单取现分期12期：本期应还款375.00，余额375.00 ，余期为01期\",\"post_amt\":\"0.00\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"375.00\",\"CreditLimit\":\"20000.00\",\"RMBCurrentAmountDue\":\"375.00\",\"StatementDate\":\"20171112\",\"PaymentDueDate\":\"20171201\"},\"payRecord\":[{\"tran_date\":\"20171030\",\"tran_desc\":\"已收妥您的款项\",\"post_amt\":\"400.15\"},{\"tran_date\":\"20171112\",\"tran_desc\":\"2月份账单取现分期12期：本期应还款375.00，余额750.00 ，余期为02期\",\"post_amt\":\"0.00\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"400.15\",\"CreditLimit\":\"20000.00\",\"RMBCurrentAmountDue\":\"400.15\",\"StatementDate\":\"20171012\",\"PaymentDueDate\":\"20171031\"},\"payRecord\":[{\"tran_date\":\"20171004\",\"tran_desc\":\"违约金\",\"post_amt\":\"19.93\"},{\"tran_date\":\"20171008\",\"tran_desc\":\"上海富友支付服务有限 上海市\",\"post_amt\":\"398.50\"},{\"tran_date\":\"20171012\",\"tran_desc\":\"分期利息\",\"post_amt\":\"5.22\"},{\"tran_date\":\"20171012\",\"tran_desc\":\"2月份账单取现分期12期：本期应还款375.00，余额1,125.00 ，余期为03期\",\"post_amt\":\"0.00\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"398.50\",\"CreditLimit\":\"20000.00\",\"RMBCurrentAmountDue\":\"398.50\",\"StatementDate\":\"20170912\",\"PaymentDueDate\":\"20171001\"},\"payRecord\":[{\"tran_date\":\"20170903\",\"tran_desc\":\"违约金\",\"post_amt\":\"18.75\"},{\"tran_date\":\"20170906\",\"tran_desc\":\"已收妥您的款项\",\"post_amt\":\"375.00\"},{\"tran_date\":\"20170912\",\"tran_desc\":\"分期利息\",\"post_amt\":\"4.75\"},{\"tran_date\":\"20170912\",\"tran_desc\":\"2月份账单取现分期12期：本期应还款375.00，余额1,500.00 ，余期为04期\",\"post_amt\":\"0.00\"}]}]},\"backtype\":\"CEB\",\"bankname\":\"光大银行信用卡\"}");
+		Resttemplate rs = new Resttemplate();
+	    map = rs.SendMessage(map, ConstantInterface.port + "/HSDC/BillFlow/BillFlowByreditCard");
+	    System.out.println(map.toString());
+	}
 
-public static void main(String[] args) {
-	Map<String,Object> map=net.sf.json.JSONObject.fromObject("{\"data\":{\"bankList\":[{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"51.17\",\"CreditLimit\":\"40000.00\",\"RMBCurrentAmountDue\":\"1023.45\",\"StatementDate\":\"20180110\",\"PaymentDueDate\":\"20180129\"},\"payRecord\":[{\"tran_date\":\"20171211\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171212\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"2.50\"},{\"tran_date\":\"20171213\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171214\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171215\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171216\",\"tran_desc\":\"账单分期手续费              (011/036)\",\"post_amt\":\"214.82\"},{\"tran_date\":\"20171216\",\"tran_desc\":\"账单免息分期-分 36 期   (011/036)\",\"post_amt\":\"795.63\"},{\"tran_date\":\"20171218\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171219\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171220\",\"tran_desc\":\"银联商户              ZHONGGUO     CN\",\"post_amt\":\"1.00\"},{\"tran_date\":\"20171220\",\"tran_desc\":\"支付宝还款            ZHONG GUO    CN\",\"post_amt\":\"-1010.45\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"50.52\",\"CreditLimit\":\"40000.00\",\"RMBCurrentAmountDue\":\"1023.45\",\"StatementDate\":\"20171210\",\"PaymentDueDate\":\"20171229\"},\"payRecord\":[{\"tran_date\":\"20171115\",\"tran_desc\":\"支付宝还款            ZHONG GUO    CN\",\"post_amt\":\"-1009.90\"},{\"tran_date\":\"20171116\",\"tran_desc\":\"账单分期手续费              (010/036)\",\"post_amt\":\"214.82\"},{\"tran_date\":\"20171116\",\"tran_desc\":\"账单免息分期-分 36 期   (010/036)\",\"post_amt\":\"795.63\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"50.50\",\"CreditLimit\":\"40000.00\",\"RMBCurrentAmountDue\":\"1023.45\",\"StatementDate\":\"20171110\",\"PaymentDueDate\":\"20171129\"},\"payRecord\":[{\"tran_date\":\"20171016\",\"tran_desc\":\"账单分期手续费              (009/036)\",\"post_amt\":\"214.82\"},{\"tran_date\":\"20171016\",\"tran_desc\":\"账单免息分期-分 36 期   (009/036)\",\"post_amt\":\"795.63\"},{\"tran_date\":\"20171017\",\"tran_desc\":\"财付通还款            ZHONG GUO    CN\",\"post_amt\":\"-1011.00\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"50.52\",\"CreditLimit\":\"40000.00\",\"RMBCurrentAmountDue\":\"1023.45\",\"StatementDate\":\"20171010\",\"PaymentDueDate\":\"20171029\"},\"payRecord\":[{\"tran_date\":\"20170911\",\"tran_desc\":\"支付宝还款            ZHONG GUO    CN\",\"post_amt\":\"-1061.15\"},{\"tran_date\":\"20170916\",\"tran_desc\":\"账单分期手续费              (008/036)\",\"post_amt\":\"214.82\"},{\"tran_date\":\"20170916\",\"tran_desc\":\"账单免息分期-分 36 期   (008/036)\",\"post_amt\":\"795.63\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"53.06\",\"CreditLimit\":\"40000.00\",\"RMBCurrentAmountDue\":\"1023.45\",\"StatementDate\":\"20170910\",\"PaymentDueDate\":\"20170929\"},\"payRecord\":[{\"tran_date\":\"20170906\",\"tran_desc\":\"饿了么（外卖）        ZHONGGUO     CN\",\"post_amt\":\"16.00\"},{\"tran_date\":\"20170910\",\"tran_desc\":\"高陵好又多商贸有限公司ZHONGGUO     CN\",\"post_amt\":\"34.70\"},{\"tran_date\":\"20170816\",\"tran_desc\":\"账单分期手续费              (007/036)\",\"post_amt\":\"214.82\"},{\"tran_date\":\"20170816\",\"tran_desc\":\"账单免息分期-分 36 期   (007/036)\",\"post_amt\":\"795.63\"},{\"tran_date\":\"20170821\",\"tran_desc\":\"财付通还款            ZHONG GUO    CN\",\"post_amt\":\"-1010.45\"}]},{\"AccountSummary\":{\"RMBMinimumAmountDue\":\"0.00\",\"CreditLimit\":\"40000.00\",\"RMBCurrentAmountDue\":\"1023.45\",\"StatementDate\":\"20170810\",\"PaymentDueDate\":\"\"},\"payRecord\":[{\"tran_date\":\"20170716\",\"tran_desc\":\"账单分期手续费              (006/036)\",\"post_amt\":\"214.82\"},{\"tran_date\":\"20170716\",\"tran_desc\":\"账单免息分期-分 36 期   (006/036)\",\"post_amt\":\"795.63\"},{\"tran_date\":\"20170723\",\"tran_desc\":\"支付宝还款            ZHONG GUO    CN\",\"post_amt\":\"-1009.90\"}]}]},\"idcard\":\"610111199203252021\",\"backtype\":\"CCB\",\"bankname\":\"中信\",\"userAccount\":\"13002945152\"}" );
-	Resttemplate rs = new Resttemplate();
-    map = rs.NewSendMessage(map, ConstantInterface.port + "/HSDC/BillFlow/BillFlowByreditCard");
-    System.out.println(map.toString());
-}
 }
 
 

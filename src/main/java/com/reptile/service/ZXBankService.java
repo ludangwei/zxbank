@@ -20,6 +20,10 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.json.JSONObject;
 import org.json.XML;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -360,7 +364,12 @@ public class ZXBankService {
 
                         String dataResult=postMeth.getResponseBodyAsString();
                         if(!dataResult.contains("网络繁忙")){
-                            dataList.add(dataResult);
+//                            dataList.add(dataResult);
+                            //新解析
+                            Map<String, Object> infoData = new HashMap<String, Object>();
+                        	infoData = getInfos(dataResult,fixedEd);
+                            dataList.add(infoData);
+                            
                         }else{
                             countError++;
                         }
@@ -380,18 +389,24 @@ public class ZXBankService {
 
                 PushSocket.pushnew(map, UUID, "6000","中信银行信息获取成功");
                 flag="6000";
-
-                Map<String, Object> sendMap = new HashMap<String, Object>();
-                sendMap.put("idcard", userCard);
-                sendMap.put("backtype", "CCB");
-                sendMap.put("html", dataList);
-                sendMap.put("fixedEd",fixedEd);
-                sendMap.put("userAccount",userCard);
-
-                logger.warn(sendMap.toString()+"   mrlu");
                 //推送信息
                 Map<String, Object> mapTui = new HashMap<String, Object>();
-                mapTui.put("data", sendMap);
+                Map<String, Object> sendMap = new HashMap<String, Object>();
+                //新解析
+	            sendMap.put("bankList", dataList);
+	            mapTui.put("data", sendMap);
+                mapTui.put("backtype", "CCB");
+	            mapTui.put("idcard", userCard);
+	            mapTui.put("bankname", "中信银行");
+	            mapTui.put("userAccount",phoneCode);
+	            
+//                sendMap.put("idcard", userCard);
+//                sendMap.put("backtype", "CCB");
+//                sendMap.put("html", dataList);
+//                sendMap.put("fixedEd",fixedEd);
+//                sendMap.put("userAccount",userCard);
+//                mapTui.put("data", sendMap);
+                logger.warn(sendMap.toString()+"   mrlu");
                 Resttemplate rs = new Resttemplate();
                 map = rs.SendMessage(mapTui, ConstantInterface.port + "/HSDC/BillFlow/BillFlowByreditCard");
                 if(map!=null&&"0000".equals(map.get("errorCode").toString())){
@@ -434,5 +449,46 @@ public class ZXBankService {
         }
         return map;
     }
+    /**
+     * 解析
+     * @param dataResult
+     * @param fixedEd
+     * @return
+     */
+    public static Map<String, Object> getInfos(String dataResult,String fixedEd) {
+		Map<String, Object> bankList = new HashMap<String, Object>();
+		Map<String, Object> accountSummary = new HashMap<String, Object>();
+		Document doc = Jsoup.parse(dataResult);
+		Element billProfile = doc.getElementsByTag("billProfile").get(0);
+		String RMBCurrentAmountDue = billProfile.attr("bq_paied").replace(",", "");//本期应还款额
+		String RMBMinimumAmountDue = billProfile.attr("min_pay").replace(",", "");//最低还款
+		String PaymentDueDate = billProfile.attr("dte_pymt_due").replace("年", "").replace("月", "").replace("日", "");//到期还款日
+		String StatementDate = billProfile.attr("stmt_date_text").replace("年", "").replace("月", "").replace("日", "");//本期账单日
+		if(RMBCurrentAmountDue.contains("计算中")){
+			RMBCurrentAmountDue="0";
+		}
+		if(RMBMinimumAmountDue.contains("计算中")){
+			RMBMinimumAmountDue="0";
+		}
+		accountSummary.put("RMBCurrentAmountDue", RMBCurrentAmountDue);
+		accountSummary.put("RMBMinimumAmountDue", RMBMinimumAmountDue);
+		accountSummary.put("PaymentDueDate", PaymentDueDate);
+		accountSummary.put("StatementDate", StatementDate);
+		accountSummary.put("CreditLimit", fixedEd);
+		
+		Elements billDetailList = doc.getElementsByTag("billDetailList");
+		List<Object> payRecordList = new ArrayList<Object>();
+		for (Element billDetail : billDetailList) {
+			Map<String, Object> payRecord = new HashMap<String, Object>();
+			payRecord.put("tran_date", billDetail.attr("post_date").replace("-", ""));//日期
+			payRecord.put("tran_desc", billDetail.attr("tran_desc").trim());//简介描述
+			payRecord.put("post_amt", billDetail.attr("post_amt").replace(",", ""));//金额
+			payRecordList.add(payRecord);//每月账单明细
+		}
+		bankList.put("payRecord", payRecordList);
+		bankList.put("AccountSummary", accountSummary);
+		return bankList;		
+	}
+
 
 }
