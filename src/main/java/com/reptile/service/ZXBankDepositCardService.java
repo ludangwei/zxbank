@@ -78,8 +78,8 @@ public class ZXBankDepositCardService {
 //            }
             //Map<String,Integer> ss = Image.findImageFullScreen("C:\\searchImg\\screen.png", "C:\\searchImg\\search.png", "C:\\searchImg\\rest.png");
             //SendKeys.sendStr(ss.get("x")+100, ss.get("y"), passWord);
-             SendKeys.sendStr(1414, 314, passWord);//正式
-//              SendKeys.sendStr(1400, 255, passWord);
+//             SendKeys.sendStr(1414, 314, passWord);
+              SendKeys.sendStr(1400, 255, passWord);//正式
             //判断是否存在验证码
             try {
                 WebElement pinImg = driver.findElementById("pinImg");
@@ -100,9 +100,9 @@ public class ZXBankDepositCardService {
             driver.findElementById("logonButton").click();
             Thread.sleep(4000);
             //判断是否登录成功
-            //判断是否有弹框          
+            //判断是否有          
             try {
-				Alert alt = driver.switchTo().alert();//监控弹框
+				Alert alt = driver.switchTo().alert();//监控
 				String errorInfo = alt.getText();
 				if(errorInfo.contains("验证码")){
 					logger.warn("********中信银行储蓄卡打码出错***********");
